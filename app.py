@@ -15,5 +15,4 @@ regions_coll = db.regions
 
 @app.route('/users', methods=['POST', 'GET'])
 def gangngegwe():
-    user_id = collection.delete_many({})
-    return f"Deleted {user_id.deleted_count} "
+    return f"bondou"

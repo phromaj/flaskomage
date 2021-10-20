@@ -4,6 +4,11 @@ API développée en Flask avec le support d'une base MongoDB.
 
 Cette API utilise les données de wikipedia.
 
+## Mise en place de l'environnement 
+Cloner le repo puis l'ouvrir. Il faudra ensuite créer un environnement et installé et les paquets requis (requirements.txt) avec la commande `pip install -r`
+Pour lancer le serveur : `flask run`
+Par défaut, vous pouvez y accéder depuis le localhost au port 5000. (localhost:5000)
+
 Il y aura 2 collections (peut emmener à évoluer) :
 
 - fromages
