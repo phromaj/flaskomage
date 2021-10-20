@@ -4,60 +4,98 @@ API développée en Flask avec le support d'une base MongoDB.
 
 Cette API utilise les données de wikipedia.
 
-Il y aura 2 collections (peut emmener à évoluer) : 
+Il y aura 2 collections (peut emmener à évoluer) :
+
 - fromages
 - regions
 
 Les documents de la collection fromages seront sous cette forme :
+
 ```JSON
 {
-    "nom": "",
-    "departement": "",
-    "pate": "",
-    "lait": "",
-    "annee_aoc": 0
-} ```
+  "_id": 0,
+  "nom": "",
+  "departement": "",
+  "pate": "",
+  "lait": "",
+  "annee_aoc": 0,
+  "fromage_id": 0
+} 
+```
 
 Les documents de la collection régions seront sous cette forme :
+
 ```JSON
 {
-    "nom": "",
-    "chef_lieu": "",
-    "departements": [""],
-    "superficie": "",
-    "population": "",
-    "densite": "",
-    "code": 0
-} ```
+  "_id": 0,
+  "nom": "",
+  "chef_lieu": "",
+  "departements": [
+    ""
+  ],
+  "superficie": "",
+  "population": "",
+  "densite": "",
+  "code": 0,
+  "region_id": 0
+} 
+```
 
 ## Lister toutes les données - GET
 
+* Récupérer toutes les données sans filtres :
+
+```py
 @app.route('/fromages', methods=['GET'])
+```
+
+```py
 @app.route('/regions', methods=['GET'])
+```
+
+* Récupérer toutes les données avec filtres :
+
+```py
+@app.route('/fromages', methods=['GET'])
+def param():
+    nom = request.args.get('nom')
+    departement = request.args.get('departement')
+    pate = request.args.get('pate')
+    lait = request.args.get('lait')
+    fromage_id = request.args.get('fromage_id')
+```
+
+```py
+@app.route('/regions', methods=['GET'])
+def param():
+    nom = request.args.get('nom')
+    chef_lieu = request.args.get('chef_lieu')
+    departements = request.args.get('departements')
+    region_id = request.args.get('region_id')
+```
 
 Réponse : JSON de type object[]
 
 ## Créer un document dans la collection fromages - POST
 
+```py
 @app.route('/fromages', methods=['POST'])
+```
 
+Réponse : Status 200 OK
 
-Réponse : JSON of type User[] containing the newly created user.
+## Modifier un document dans la collection fromages - PUT
 
-## Modify a user - PUT
+```py
+@app.route('/fromages/<id>', methods=['PUT'])
+```
 
-Function that allows to modify a user.
+Response : Status 201 Created
 
-@app.route('/users/<id>', methods=['PUT'])
+## Supprimer un document dans la collection fromages - DELETE
 
-
-Response : JSON of type User[] containing the modified user.
-
-## Delete a user - DELETE
-
-Function that allows you to delete a user.
-
-@app.route('/users/<id>', methods=['DELETE'])
-
+```py
+@app.route('/fromages/<id>', methods=['DELETE'])
+```
 
 Response : Status 200 OK
