@@ -13,11 +13,13 @@ fromages_coll = db.fromages
 regions_coll = db.regions
 
 
-# @app.route('/get', methods=['GET'])
-# def get():
-#     get_value = fromages_coll.find().count()
-#     print(get_value)
-#     return f"Get {get_value}"
+@app.route('/get', methods=['GET'])
+def get():
+    fromages_data = []
+    get_value = fromages_coll.find()
+    for x in get_value:
+        fromages_data.append(x)
+    return f"{fromages_data}"
 
 
 @app.route('/insert_one', methods=['POST'])
