@@ -4,23 +4,31 @@ from wiki_scraper import scrape_fromages, scrape_regions
 
 app = Flask(__name__)
 
-username = 'lucas'
-password = 'gauvain'
+username = 'clement'
+password = 'mullet'
 client = pymongo.MongoClient(
-    f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/?retryWrites=true&w=majority"
+    f"mongodb+srv://{username}:{password}@cluster0.94ioa.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 )
 db = client.flaskomage
 fromages_coll = db.fromages
 regions_coll = db.regions
 
 
-@app.route('/get', methods=['GET'])
-def get():
+@app.route('/get_fromage', methods=['GET'])
+def get_fromage():
     fromages_data = []
     get_value = fromages_coll.find()
     for x in get_value:
         fromages_data.append(x)
     return f"{fromages_data}"
+
+@app.route('/get_region', methods=['GET'])
+def get_region():
+    regions_data = []
+    get_value = regions_coll.find()
+    for x in get_value:
+        regions_data.append(x)
+    return f"{regions_data}"
 
 @app.route('/scrape_regions', methods=['POST'])
 def generate_regions(): 
