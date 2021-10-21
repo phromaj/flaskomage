@@ -3,10 +3,10 @@ import pymongo
 
 app = Flask(__name__)
 
-username = 'lucas'
-password = 'gauvain'
+username = 'lena'
+password = 'admin'
 client = pymongo.MongoClient(
-    f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/?retryWrites=true&w=majority"
+    f"mongodb+srv://{username}:{password}@coding.mvpr0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
 )
 db = client.flaskomage
 fromages_coll = db.fromages

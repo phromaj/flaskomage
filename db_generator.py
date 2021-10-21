@@ -6,7 +6,6 @@ import os
 
 app = Flask(__name__)
 
-
 username = 'lucas'
 password = 'gauvain'
 client = pymongo.MongoClient(
@@ -27,7 +26,7 @@ def scrape_regions():
     soup = BeautifulSoup(page.content)
 
     tables = soup.findAll("table", {"class": "wikitable"})
-    
+
     table = tables[2]
 
     tableau = []
@@ -90,8 +89,8 @@ def scrape_regions():
     regions_to_send = []
     count = 0
     for i, t in enumerate(tableau):
-        
-        count = count+1
+
+        count = count + 1
 
         final_result = []
         splitted_deps = t[3].split('(')
@@ -104,7 +103,7 @@ def scrape_regions():
         final_result = formatted_deps.split(' ')
         final_result[:] = [x for x in final_result if x]
         for i in range(len(final_result)):
-            if  "--" in final_result[i]:
+            if "--" in final_result[i]:
                 final_result[i] = final_result[i].replace("--", "-et-")
 
         regions = {
@@ -133,7 +132,7 @@ def scrape_fromages():
     soup = BeautifulSoup(page.content, features="html.parser")
 
     tables = soup.findAll("table", {"class": "wikitable"})
-    
+
     table = tables[0]
 
     tableau = []
