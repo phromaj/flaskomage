@@ -1,22 +1,8 @@
-from flask import Flask
 from bs4 import BeautifulSoup
-import pymongo
 import requests
 import os
 
-app = Flask(__name__)
 
-username = 'lucas'
-password = 'gauvain'
-client = pymongo.MongoClient(
-    f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/?retryWrites=true&w=majority"
-)
-db = client.flaskomage
-fromages_coll = db.fromages
-regions_coll = db.regions
-
-
-@app.route('/scrape_regions', methods=['POST'])
 def scrape_regions():
     wiki = "https://fr.wikipedia.org/wiki/R%C3%A9gion_fran%C3%A7aise"
     header = {
@@ -65,7 +51,6 @@ def scrape_regions():
                     # in some cases the colspan can overflow the table, in those cases just get the last item
                     cell_n = min(cell_n, len(data[row_n]) - 1)
                     data[row_n][cell_n] += cell.text
-                    # print(cell.text)
 
         data.append(rowD)
 
@@ -85,7 +70,6 @@ def scrape_regions():
         tableau.append(to_append)
 
     tableau = tableau[1:-1]
-    print(tableau)
     regions_to_send = []
     count = 0
     for i, t in enumerate(tableau):
@@ -117,12 +101,9 @@ def scrape_regions():
         }
         regions_to_send.append(regions)
 
-    print(regions_to_send)
-    insert_value = fromages_coll.insert_many(regions_to_send).inserted_ids
-    return str(insert_value)
+    return regions_to_send
 
 
-@app.route('/scrape_fromages', methods=['POST'])
 def scrape_fromages():
     wiki = "https://fr.wikipedia.org/wiki/Liste_des_AOC_et_AOP_laiti%C3%A8res_fran%C3%A7aises"
     header = {
@@ -171,7 +152,6 @@ def scrape_fromages():
                     # in some cases the colspan can overflow the table, in those cases just get the last item
                     cell_n = min(cell_n, len(data[row_n]) - 1)
                     data[row_n][cell_n] += cell.text
-                    # print(cell.text)
 
         data.append(rowD)
 
@@ -237,6 +217,4 @@ def scrape_fromages():
         }
         fromages_to_send.append(fromages)
 
-    print(fromages_to_send)
-    insert_value = fromages_coll.insert_many(fromages_to_send).inserted_ids
-    return str(insert_value)
+    return fromages_to_send

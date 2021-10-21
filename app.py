@@ -1,5 +1,6 @@
 from flask import Flask, request
 import pymongo
+from wiki_scraper import scrape_fromages, scrape_regions
 
 app = Flask(__name__)
 
@@ -21,6 +22,19 @@ def get():
         fromages_data.append(x)
     return f"{fromages_data}"
 
+@app.route('/scrape_regions', methods=['POST'])
+def generate_regions(): 
+    regions_to_send = scrape_regions()
+    regions_coll.remove()
+    insert_value = regions_coll.insert_many(regions_to_send).inserted_ids
+    return str(insert_value)
+
+@app.route('/scrape_fromages', methods=['POST'])
+def generate_fromages(): 
+    fromages_to_send = scrape_fromages()
+    fromages_coll.remove()
+    insert_value = fromages_coll.insert_many(fromages_to_send).inserted_ids
+    return str(insert_value)
 
 @app.route('/insert_one', methods=['POST'])
 def insert_one():
