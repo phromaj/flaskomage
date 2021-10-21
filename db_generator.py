@@ -1,22 +1,22 @@
+from flask import Flask
 from bs4 import BeautifulSoup
 import pymongo
 import requests
 import os
 
+app = Flask(__name__)
 
-def main():
-    username = 'lucas'
-    password = 'gauvain'
-    client = pymongo.MongoClient(
-        f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/?retryWrites=true&w=majority"
-    )
-    db = client.flaskomage
-    fromages_coll = db.fromages
-    regions_coll = db.regions
+username = 'lucas'
+password = 'gauvain'
+client = pymongo.MongoClient(
+    f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/?retryWrites=true&w=majority"
+)
+db = client.flaskomage
+fromages_coll = db.fromages
+regions_coll = db.regions
 
-    scrape_regions()
-    scrape_fromages()
 
+@app.route('/scrape_regions', methods=['POST'])
 def scrape_regions():
     wiki = "https://fr.wikipedia.org/wiki/R%C3%A9gion_fran%C3%A7aise"
     header = {
@@ -26,7 +26,7 @@ def scrape_regions():
     soup = BeautifulSoup(page.content)
 
     tables = soup.findAll("table", {"class": "wikitable"})
-    
+
     table = tables[2]
 
     tableau = []
@@ -89,8 +89,8 @@ def scrape_regions():
     regions_to_send = []
     count = 0
     for i, t in enumerate(tableau):
-        
-        count = count+1
+
+        count = count + 1
 
         final_result = []
         splitted_deps = t[3].split('(')
@@ -103,7 +103,7 @@ def scrape_regions():
         final_result = formatted_deps.split(' ')
         final_result[:] = [x for x in final_result if x]
         for i in range(len(final_result)):
-            if  "--" in final_result[i]:
+            if "--" in final_result[i]:
                 final_result[i] = final_result[i].replace("--", "-et-")
 
         regions = {
@@ -118,18 +118,21 @@ def scrape_regions():
         regions_to_send.append(regions)
 
     print(regions_to_send)
+    insert_value = fromages_coll.insert_many(regions_to_send).inserted_ids
+    return str(insert_value)
 
 
+@app.route('/scrape_fromages', methods=['POST'])
 def scrape_fromages():
     wiki = "https://fr.wikipedia.org/wiki/Liste_des_AOC_et_AOP_laiti%C3%A8res_fran%C3%A7aises"
     header = {
         'User-Agent': 'Mozilla/5.0'
     }
     page = requests.get(wiki, headers=header)
-    soup = BeautifulSoup(page.content)
+    soup = BeautifulSoup(page.content, features="html.parser")
 
     tables = soup.findAll("table", {"class": "wikitable"})
-    
+
     table = tables[0]
 
     tableau = []
@@ -192,8 +195,8 @@ def scrape_fromages():
     fromages_to_send = []
     count = 0
     for t in tableau:
-        
-        count = count+1
+
+        count = count + 1
 
         final_result = []
 
@@ -210,7 +213,7 @@ def scrape_fromages():
             final_result = d.split(' ')
             final_result[:] = [x for x in final_result if x]
             for i in range(len(final_result)):
-                if  "--" in final_result[i]:
+                if "--" in final_result[i]:
                     final_result[i] = final_result[i].replace("--", "-et-")
         if is_list:
             splitted_deps = t[3].split('(')
@@ -221,7 +224,7 @@ def scrape_fromages():
             final_result = formatted_deps.split(' ')
             final_result[:] = [x for x in final_result if x]
             for i in range(len(final_result)):
-                if  "--" in final_result[i]:
+                if "--" in final_result[i]:
                     final_result[i] = final_result[i].replace("--", "-et-")
 
         fromages = {
@@ -235,7 +238,5 @@ def scrape_fromages():
         fromages_to_send.append(fromages)
 
     print(fromages_to_send)
-
-
-if __name__ == '__main__':
-    main()
+    insert_value = fromages_coll.insert_many(fromages_to_send).inserted_ids
+    return str(insert_value)
