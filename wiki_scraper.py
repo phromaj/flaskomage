@@ -2,6 +2,11 @@ from bs4 import BeautifulSoup
 import requests
 
 def scrape_regions():
+    """Récupère les régions de France depuis Wikipedia
+
+    Returns:
+        region[]: liste de région
+    """
     wiki = "https://fr.wikipedia.org/wiki/R%C3%A9gion_fran%C3%A7aise"
     header = {
         'User-Agent': 'Mozilla/5.0'
@@ -58,6 +63,7 @@ def scrape_regions():
         rowStr = '$'.join(data[i])
         tab.append(rowStr)
 
+    # split datas into arrays of string
     for t in tab:
         split = t.split("$", 10)
         to_append = []
@@ -66,9 +72,11 @@ def scrape_regions():
             to_append.append(d)
         tableau.append(to_append)
 
+    # remove first and last element of array
     tableau = tableau[1:-1]
     regions_to_send = []
     count = 0
+    # convert array of string into array of region object
     for i, t in enumerate(tableau):
 
         count = count + 1
@@ -102,6 +110,11 @@ def scrape_regions():
 
 
 def scrape_fromages():
+    """Récupère les fromages de France depuis Wikipedia
+
+    Returns:
+        fromage[]: liste de fromage
+    """
     wiki = "https://fr.wikipedia.org/wiki/Liste_des_AOC_et_AOP_laiti%C3%A8res_fran%C3%A7aises"
     header = {
         'User-Agent': 'Mozilla/5.0'
@@ -158,6 +171,7 @@ def scrape_fromages():
         rowStr = '$'.join(data[i])
         tab.append(rowStr)
 
+    # split datas into array of string
     for t in tab:
         split = t.split("$", 5)
         to_append = []
@@ -166,10 +180,12 @@ def scrape_fromages():
             to_append.append(d)
         tableau.append(to_append)
 
+    # remove 1st elem of table
     tableau = tableau[1:]
 
     fromages_to_send = []
     count = 0
+    # convert arary of string into array of fromages
     for t in tableau:
 
         count = count + 1
@@ -208,7 +224,7 @@ def scrape_fromages():
             "departement": final_result,
             "pate": t[2],
             "lait": t[1],
-            "annee_aoc": t[4],
+            "annee_aoc": int(t[4]),
             "fromage_id": count
         }
         fromages_to_send.append(fromages)

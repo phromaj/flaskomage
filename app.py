@@ -1,5 +1,7 @@
-from flask import Flask, request
+from bson import json_util
+from flask import Flask, request, jsonify
 import pymongo
+
 from wiki_scraper import scrape_fromages, scrape_regions
 
 app = Flask(__name__)
@@ -14,53 +16,53 @@ fromages_coll = db.fromages
 regions_coll = db.regions
 
 
-@app.route('/get', methods=['GET'])
+@app.route('/fromages', methods=['GET'])
 def get():
-    fromages_data = []
-    get_value = fromages_coll.find()
-    for x in get_value:
-        fromages_data.append(x)
-    return f"{fromages_data}"
+    try:
+        fromages = list(fromages_coll.find({}))
+    except:
+        return "An error has occured", 500
+    return json_util.dumps(fromages), 200
 
 
 @app.route('/scrape_regions', methods=['POST'])
 def generate_regions():
     regions_to_send = scrape_regions()
     regions_coll.remove()
-    insert_value = regions_coll.insert_many(regions_to_send).inserted_ids
-    return str(insert_value)
+    try:
+        regions_coll.insert_many(regions_to_send).inserted_ids
+    except:
+        return "Could not generate db", 500
+    return "Regions Collection generated", 200
 
 
 @app.route('/scrape_fromages', methods=['POST'])
 def generate_fromages():
     fromages_to_send = scrape_fromages()
     fromages_coll.remove()
-    insert_value = fromages_coll.insert_many(fromages_to_send).inserted_ids
-    return str(insert_value)
+    try:
+        regions_coll.insert_many(fromages_to_send).inserted_ids
+    except:
+        return "Could not generate db", 500
+    return "Regions Collection generated", 200
 
 
-@app.route('/insert_one', methods=['POST'])
-def insert_one():
+@app.route('/fromages', methods=['POST'])
+def insert():
     """
-    Function to insert a document in the cheese collection.
+    Function to insert one or many documents in the cheese collection.
     :return: 
     """
-    req_data = request.get_json()
-    new_fromage = fromages_coll.insert_one(req_data).inserted_id
-    print(req_data)
-    return f"Inserted {new_fromage}"
+    fetchedDatas = request.get_json()
+    if not isinstance(fetchedDatas, list):
+        fetchedDatas = [fetchedDatas]
+    fromages_coll.insert_many(fetchedDatas).inserted_ids
+    try:
+        fromages_coll.insert_one(request.get_json()).inserted_id
+    except:
+        return "An error has occured", 500
+    return "Successfully posted", 200
 
-
-@app.route('/insert_many', methods=['POST'])
-def insert_many():
-    """
-    Function that allows to insert many documents in the cheese collection.
-    :return:
-    """
-    req_data = request.get_json()
-    new_fromages = fromages_coll.insert_many(req_data).inserted_ids
-    print(req_data)
-    return f"Inserted {new_fromages}"
 
 @app.route('/delete_one/<id_fromage>', methods=['DELETE'])
 def delete_one(id_fromage):
@@ -68,10 +70,13 @@ def delete_one(id_fromage):
     Function to delete a cheese designated by its id.
     :return:
     """
-    fromages_coll.delete_one({
-        "fromage_id": int(id_fromage)
-    })
-    return "Delete"
+    try:
+        fromages_coll.delete_one({
+            "fromage_id": int(id_fromage)
+        })
+    except:
+        return "Could not delete element", 500
+    return "Deleted", 200
 
 
 @app.route('/delete_many', methods=['DELETE'])
