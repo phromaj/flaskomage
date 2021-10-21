@@ -14,10 +14,113 @@ def main():
     fromages_coll = db.fromages
     regions_coll = db.regions
 
-    scrape_data()
+    scrape_regions()
+    scrape_fromages()
+
+def scrape_regions():
+    wiki = "https://fr.wikipedia.org/wiki/R%C3%A9gion_fran%C3%A7aise"
+    header = {
+        'User-Agent': 'Mozilla/5.0'
+    }
+    page = requests.get(wiki, headers=header)
+    soup = BeautifulSoup(page.content)
+
+    tables = soup.findAll("table", {"class": "wikitable"})
+    
+    table = tables[2]
+
+    tableau = []
+
+    # preinit list of lists
+    rows = table.findAll("tr")
+    row_lengths = [len(r.findAll(['th', 'td'])) for r in rows]
+    ncols = max(row_lengths)
+    nrows = len(rows)
+    data = []
+    for i in range(nrows):
+        rowD = []
+        for j in range(ncols):
+            rowD.append('')
+        data.append(rowD)
+
+    # process html
+    for i in range(len(rows)):
+        row = rows[i]
+        rowD = []
+        cells = row.findAll(["td", "th"])
+        for j in range(len(cells)):
+            cell = cells[j]
+
+            # lots of cells span cols and rows so lets deal with that
+            cspan = int(cell.get('colspan', 1))
+            rspan = int(cell.get('rowspan', 1))
+            l = 0
+            for k in range(rspan):
+                # Shifts to the first empty cell of this row
+                while data[i + k][j + l]:
+                    l += 1
+                for m in range(cspan):
+                    cell_n = j + l + m
+                    row_n = i + k
+                    # in some cases the colspan can overflow the table, in those cases just get the last item
+                    cell_n = min(cell_n, len(data[row_n]) - 1)
+                    data[row_n][cell_n] += cell.text
+                    # print(cell.text)
+
+        data.append(rowD)
+
+    # write data out to tab seperated format
+    page = os.path.split(wiki)[1]
+    tab = []
+    for i in range(nrows):
+        rowStr = '$'.join(data[i])
+        tab.append(rowStr)
+
+    for t in tab:
+        split = t.split("$", 10)
+        to_append = []
+        for e in split:
+            d = e.strip()
+            to_append.append(d)
+        tableau.append(to_append)
+
+    tableau = tableau[1:-1]
+    print(tableau)
+    regions_to_send = []
+    count = 0
+    for i, t in enumerate(tableau):
+        
+        count = count+1
+
+        final_result = []
+        splitted_deps = t[3].split('(')
+        formatted_deps = splitted_deps[1]
+        if i == 0:
+            formatted_deps = splitted_deps[2]
+        chars_to_remove = [",", "et", ")", "ainsi que"]
+        for i in chars_to_remove:
+            formatted_deps = formatted_deps.replace(i, '')
+        final_result = formatted_deps.split(' ')
+        final_result[:] = [x for x in final_result if x]
+        for i in range(len(final_result)):
+            if  "--" in final_result[i]:
+                final_result[i] = final_result[i].replace("--", "-et-")
+
+        regions = {
+            "nom": t[1].split('[')[0],
+            "departement": final_result,
+            "chef_lieu": t[2].split('[')[0],
+            "superficie": int(t[4].replace(u'\xa0', '')),
+            "population": int(t[5].replace(u'\xa0', '')),
+            "code": int(t[8]),
+            "region_id": count
+        }
+        regions_to_send.append(regions)
+
+    print(regions_to_send)
 
 
-def scrape_data():
+def scrape_fromages():
     wiki = "https://fr.wikipedia.org/wiki/Liste_des_AOC_et_AOP_laiti%C3%A8res_fran%C3%A7aises"
     header = {
         'User-Agent': 'Mozilla/5.0'
@@ -26,64 +129,65 @@ def scrape_data():
     soup = BeautifulSoup(page.content)
 
     tables = soup.findAll("table", {"class": "wikitable"})
+    
+    table = tables[0]
 
     tableau = []
-    for tn, table in enumerate(tables):
 
-        # preinit list of lists
-        rows = table.findAll("tr")
-        row_lengths = [len(r.findAll(['th', 'td'])) for r in rows]
-        ncols = max(row_lengths)
-        nrows = len(rows)
-        data = []
-        for i in range(nrows):
-            rowD = []
-            for j in range(ncols):
-                rowD.append('')
-            data.append(rowD)
+    # preinit list of lists
+    rows = table.findAll("tr")
+    row_lengths = [len(r.findAll(['th', 'td'])) for r in rows]
+    ncols = max(row_lengths)
+    nrows = len(rows)
+    data = []
+    for i in range(nrows):
+        rowD = []
+        for j in range(ncols):
+            rowD.append('')
+        data.append(rowD)
 
-        # process html
-        for i in range(len(rows)):
-            row = rows[i]
-            rowD = []
-            cells = row.findAll(["td", "th"])
-            for j in range(len(cells)):
-                cell = cells[j]
+    # process html
+    for i in range(len(rows)):
+        row = rows[i]
+        rowD = []
+        cells = row.findAll(["td", "th"])
+        for j in range(len(cells)):
+            cell = cells[j]
 
-                # lots of cells span cols and rows so lets deal with that
-                cspan = int(cell.get('colspan', 1))
-                rspan = int(cell.get('rowspan', 1))
-                l = 0
-                for k in range(rspan):
-                    # Shifts to the first empty cell of this row
-                    while data[i + k][j + l]:
-                        l += 1
-                    for m in range(cspan):
-                        cell_n = j + l + m
-                        row_n = i + k
-                        # in some cases the colspan can overflow the table, in those cases just get the last item
-                        cell_n = min(cell_n, len(data[row_n]) - 1)
-                        data[row_n][cell_n] += cell.text
-                        # print(cell.text)
+            # lots of cells span cols and rows so lets deal with that
+            cspan = int(cell.get('colspan', 1))
+            rspan = int(cell.get('rowspan', 1))
+            l = 0
+            for k in range(rspan):
+                # Shifts to the first empty cell of this row
+                while data[i + k][j + l]:
+                    l += 1
+                for m in range(cspan):
+                    cell_n = j + l + m
+                    row_n = i + k
+                    # in some cases the colspan can overflow the table, in those cases just get the last item
+                    cell_n = min(cell_n, len(data[row_n]) - 1)
+                    data[row_n][cell_n] += cell.text
+                    # print(cell.text)
 
-            data.append(rowD)
+        data.append(rowD)
 
-        # write data out to tab seperated format
-        page = os.path.split(wiki)[1]
-        tab = []
-        for i in range(nrows):
-            rowStr = '$'.join(data[i])
-            tab.append(rowStr)
+    # write data out to tab seperated format
+    page = os.path.split(wiki)[1]
+    tab = []
+    for i in range(nrows):
+        rowStr = '$'.join(data[i])
+        tab.append(rowStr)
 
-        for t in tab:
-            split = t.split("$", 5)
-            to_append = []
-            for e in split:
-                d = e.strip()
-                to_append.append(d)
-            tableau.append(to_append)
+    for t in tab:
+        split = t.split("$", 5)
+        to_append = []
+        for e in split:
+            d = e.strip()
+            to_append.append(d)
+        tableau.append(to_append)
 
-        tableau = tableau[1:]
+    tableau = tableau[1:]
 
     fromages_to_send = []
     count = 0
@@ -100,7 +204,7 @@ def scrape_data():
 
         if not is_list:
             d = t[3]
-            chars_to_remove = [",", "et", "ainsi", "que"]
+            chars_to_remove = [",", "et", "ainsi que"]
             for i in chars_to_remove:
                 d = d.replace(i, '')
             final_result = d.split(' ')
@@ -111,7 +215,7 @@ def scrape_data():
         if is_list:
             splitted_deps = t[3].split('(')
             formatted_deps = splitted_deps[1]
-            chars_to_remove = [",", "et", ")", "ainsi", "que"]
+            chars_to_remove = [",", "et", ")", "ainsi que"]
             for i in chars_to_remove:
                 formatted_deps = formatted_deps.replace(i, '')
             final_result = formatted_deps.split(' ')
