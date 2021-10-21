@@ -1,7 +1,5 @@
 from bs4 import BeautifulSoup
 import requests
-import os
-
 
 def scrape_regions():
     wiki = "https://fr.wikipedia.org/wiki/R%C3%A9gion_fran%C3%A7aise"
@@ -55,7 +53,6 @@ def scrape_regions():
         data.append(rowD)
 
     # write data out to tab seperated format
-    page = os.path.split(wiki)[1]
     tab = []
     for i in range(nrows):
         rowStr = '$'.join(data[i])
@@ -156,7 +153,6 @@ def scrape_fromages():
         data.append(rowD)
 
     # write data out to tab seperated format
-    page = os.path.split(wiki)[1]
     tab = []
     for i in range(nrows):
         rowStr = '$'.join(data[i])
