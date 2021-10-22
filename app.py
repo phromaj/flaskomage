@@ -6,10 +6,10 @@ from wiki_scraper import scrape_fromages, scrape_regions
 
 app = Flask(__name__)
 
-username = 'lucas'
-password = 'gauvain'
+username = 'lena'
+password = 'admin'
 client = pymongo.MongoClient(
-    f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+    f"mongodb+srv://{username}:{password}@coding.mvpr0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client.flaskomage
 fromages_coll = db.fromages
 regions_coll = db.regions
@@ -80,7 +80,7 @@ def insert():
     :return: Status code 200
     """
     if not request.is_json:
-        return "Il manque le JSON dans la requête", 400
+        return "The JSON is missing in the request", 400
 
     fetchedDatas = request.get_json()
     fromage_tab = []
@@ -96,22 +96,22 @@ def insert():
         lait = data.get('lait', None)
         annee_aoc = data.get('annee_aoc', None)
         if not nom:
-            return "Il manque le paramètre 'nom' dans la requête", 400
+            return "The 'nom' parameter is missing in the query", 400
         if not departement:
-            return "Il manque le paramètre 'departement' dans la requête", 400
+            return "The parameter 'departement' is missing in the query", 400
         if not isinstance(departement, list):
-            return "Le type attendu pour le paramètre 'departement' n'est pas correct, il faut un tableau de string", 400
+            return "The expected type for the 'departement' parameter is not correct, a string array is required", 400
         if not pate:
-            return "Il manque le paramètre 'pate' dans la requête", 400
+            return "The parameter 'pate' is missing in the query", 400
         if not lait:
-            return "Il manque le paramètre 'lait' dans la requête", 400
+            return "The parameter 'lait' is missing in the query", 400
         if not annee_aoc:
-            return "Il manque le paramètre 'annee_aoc' dans la requête", 400
+            return "The parameter 'annee_aoc' is missing in the query", 400
         if type(annee_aoc) is int:
             if annee_aoc < 1900 or annee_aoc > 2100:
-                return "L'année rentrée n'est pas valide", 400
+                return "The re-entry year is not valid", 400
         else:
-            return "Le type attendu pour le paramètre 'annee_aoc' n'est pas correct, il faut entrer un entier"
+            return "The expected type for the parameter 'annee_aoc' is not correct, you have to enter an integer"
 
         initial_count += 1
         fromage = {
