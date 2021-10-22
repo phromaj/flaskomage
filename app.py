@@ -31,7 +31,7 @@ def get_regions():
         regions_data.append(x)
     return f"{regions_data}"
 
-
+  
 @app.route('/scrape_regions', methods=['POST'])
 def generate_regions():
     regions_to_send = scrape_regions()
