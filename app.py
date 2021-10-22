@@ -22,8 +22,6 @@ def get_fromage():
     get_value = fromages_coll.find(nom)
     for x in get_value:
         fromages_data.append(x)
-
-
     return f"{fromages_data}"
 
 
