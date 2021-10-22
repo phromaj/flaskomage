@@ -3,9 +3,9 @@ import requests
 
 
 def scrape_regions():
-    """Get every regions from wikipedia
-    Returns:
-        region[]: list of regions
+    """
+    Get every regions from wikipedia.
+    :return: region[]: list of regions
     """
     wiki = "https://fr.wikipedia.org/wiki/R%C3%A9gion_fran%C3%A7aise"
     header = {
@@ -68,9 +68,9 @@ def scrape_regions():
 
 
 def scrape_fromages():
-    """Get every cheeses from wikipedia
-    Returns:
-        fromage[]: list of cheese
+    """
+    Get every cheeses from wikipedia.
+    :return: fromage[]: list of cheese
     """
     wiki = "https://fr.wikipedia.org/wiki/Liste_des_AOC_et_AOP_laiti%C3%A8res_fran%C3%A7aises"
     header = {
@@ -148,6 +148,10 @@ def scrape_fromages():
 
 
 def process_table(table):
+    """
+    Process table to return formatted array of string.
+    :return: tab[]: array of string
+    """
     # preinit list of lists
     rows = table.findAll("tr")
     row_lengths = [len(r.findAll(['th', 'td'])) for r in rows]

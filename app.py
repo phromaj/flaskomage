@@ -9,8 +9,7 @@ app = Flask(__name__)
 username = 'lucas'
 password = 'gauvain'
 client = pymongo.MongoClient(
-f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
-
+    f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
 db = client.flaskomage
 fromages_coll = db.fromages
 regions_coll = db.regions
@@ -18,12 +17,20 @@ regions_coll = db.regions
 
 @app.route('/regions', methods=['GET'])
 def get_regions():
+    """
+    Retrieves all data from the regions collection.
+    :return: regions[]: list of regions and status code 200
+    """
     regions = list(regions_coll.find({}))
     return json_util.dumps(regions), 200
 
 
 @app.route('/regions/db_generator', methods=['POST'])
 def generate_regions():
+    """
+    Generate datas in regions collection.
+    :return: Status code 200
+    """
     regions_to_send = scrape_regions()
     regions_coll.remove()
     regions_coll.insert_many(regions_to_send).inserted_ids
@@ -32,6 +39,10 @@ def generate_regions():
 
 @app.route('/fromages', methods=['GET'])
 def get_fromages():
+    """
+    Retrieves all data from the cheese collection.
+    :return: fromages[]: list of fromages and status code 200
+    """
     fromages = list(fromages_coll.find({}))
     return json_util.dumps(fromages), 200
 
@@ -52,6 +63,10 @@ def get_filter():
 
 @app.route('/fromages/db_generator', methods=['POST'])
 def generate_fromages():
+    """
+    Generate datas in fromages collection.
+    :return: Status code 200
+    """
     fromages_to_send = scrape_fromages()
     fromages_coll.remove()
     fromages_coll.insert_many(fromages_to_send).inserted_ids
@@ -62,11 +77,10 @@ def generate_fromages():
 def insert():
     """
     Function to insert one or many documents in the cheese collection.
-    :return: 
+    :return: Status code 200
     """
     if not request.is_json:
         return "Il manque le JSON dans la requête", 400
-
 
     fetchedDatas = request.get_json()
     fromage_tab = []
@@ -112,18 +126,18 @@ def insert():
 
     # Insert many documents in the cheese collection.
     fromages_coll.insert_many(fromage_tab).inserted_ids
-
     return "Successfully posted", 200
+
 
 @app.route('/fromages/<id_fromage>', methods=['DELETE'])
 def delete_one(id_fromage):
     """
     Function to delete a cheese designated by its id.
-    :return:
+    :return: Status code 200
     """
     result = fromages_coll.delete_one({
-            "fromage_id": int(id_fromage)
-        })
+        "fromage_id": int(id_fromage)
+    })
     if result.deleted_count == 0:
         return "ID isn't correct", 500
     else:
@@ -134,7 +148,7 @@ def delete_one(id_fromage):
 def delete_many():
     """
     Function to delete all the documents in the cheese collection.
-    :return:
+    :return: Status code 200
     """
     result = fromages_coll.delete_many({})
     if result.deleted_count == 0:
@@ -147,9 +161,9 @@ def delete_many():
 def update_one(id_fromage):
     """
     Function to update a cheese designated by its id.
-    :return:
+    :return: Status code 200
     """
     filter_by_id = {'fromage_id': int(id_fromage)}
     new_values = {"$set": request.get_json()}
     fromages_coll.update_one(filter_by_id, new_values)
-    return "Update"
+    return "Update", 200
