@@ -1,3 +1,4 @@
+import re
 from bson import json_util
 from flask import Flask, request, jsonify
 import pymongo
@@ -166,12 +167,13 @@ def update_one(id_fromage):
     filter_by_id = {'fromage_id': int(id_fromage)}
     fromage = request.get_json()
     keys = ["nom", "departement", "annee_aoc", "pate", "lait"]
-    hasKey = True
     for key in fromage.keys():
         if not key in keys:
-            hasKey = False
-    if not hasKey:
-        return "Sent JSON is not valid"
+            return "Sent JSON is not valid", 500
+    if "annee_aoc" in fromage and type(fromage["annee_aoc"]) is not int:
+        return "annee_aoc must be an int", 500
+    if "departement" in fromage and not isinstance(fromage["departement"], list):
+        return "departement must be a list"
     new_values = {"$set": fromage}
     fromages_coll.update_one(filter_by_id, new_values)
     return "Updated", 200
