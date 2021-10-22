@@ -5,7 +5,7 @@ API développée en Flask avec le support d'une base MongoDB.
 Cette API utilise les données de wikipedia.
 
 ## Mise en place de l'environnement 
-Cloner le repo puis l'ouvrir. Il faudra ensuite créer un environnement et installé et les paquets requis (requirements.txt) avec la commande `pip install -r`
+Cloner le repo puis l'ouvrir. Il faudra ensuite créer un environnement et installé et les paquets requis (requirements.txt) avec la commande `pip install -r requirements.txt`
 Pour lancer le serveur : `flask run`
 Par défaut, vous pouvez y accéder depuis le localhost au port 5000. (localhost:5000)
 
@@ -40,7 +40,6 @@ Les documents de la collection régions seront sous cette forme :
   ],
   "superficie": "",
   "population": "",
-  "densite": "",
   "code": 0,
   "region_id": 0
 } 
@@ -95,7 +94,7 @@ Réponse : Status 200 OK
 @app.route('/fromages/<id>', methods=['PUT'])
 ```
 
-Response : Status 201 Created
+Response : Status 200 OK
 
 ## Supprimer un document dans la collection fromages - DELETE
 
