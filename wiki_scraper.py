@@ -1,9 +1,9 @@
 from bs4 import BeautifulSoup
 import requests
 
+
 def scrape_regions():
     """Get every regions from wikipedia
-
     Returns:
         region[]: list of regions
     """
@@ -19,7 +19,7 @@ def scrape_regions():
     table = tables[2]
 
     tableau = []
-    
+
     tab = process_table(table)
 
     # split datas into arrays of string
@@ -64,13 +64,11 @@ def scrape_regions():
             "region_id": count
         }
         regions_to_send.append(regions)
-
     return regions_to_send
 
 
 def scrape_fromages():
     """Get every cheeses from wikipedia
-
     Returns:
         fromage[]: list of cheese
     """
@@ -146,8 +144,8 @@ def scrape_fromages():
             "fromage_id": count
         }
         fromages_to_send.append(fromages)
-
     return fromages_to_send
+
 
 def process_table(table):
     # preinit list of lists

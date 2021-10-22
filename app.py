@@ -15,6 +15,7 @@ db = client.flaskomage
 fromages_coll = db.fromages
 regions_coll = db.regions
 
+
 @app.route('/regions', methods=['GET'])
 def get_regions():
     regions_data = []
@@ -24,15 +25,16 @@ def get_regions():
     return f"{regions_data}"
 
 
-@app.route('/regions/db-generator', methods=['POST'])
+@app.route('/regions/db_generator', methods=['POST'])
 def generate_regions():
     regions_to_send = scrape_regions()
-    regions_to_send.remove()
+    regions_coll.remove()
     try:
         regions_coll.insert_many(regions_to_send).inserted_ids
     except:
         return "Could not generate db", 500
     return "Regions Collection generated", 200
+
 
 @app.route('/fromages', methods=['GET'])
 def get_fromages():
@@ -43,7 +45,7 @@ def get_fromages():
     return json_util.dumps(fromages), 200
 
 
-@app.route('/fromages', methods=['GET'])
+@app.route('/fromages_filter', methods=['GET'])
 def get_filter():
     try:
         fromages_data = []
@@ -57,13 +59,12 @@ def get_filter():
     return json_util.dumps(fromages_data), 200
 
 
-
-@app.route('/fromages/db-generator', methods=['POST'])
+@app.route('/fromages/db_generator', methods=['POST'])
 def generate_fromages():
     fromages_to_send = scrape_fromages()
     fromages_coll.remove()
     try:
-        regions_coll.insert_many(fromages_to_send).inserted_ids
+        fromages_coll.insert_many(fromages_to_send).inserted_ids
     except:
         return "Could not generate db", 500
     return "Fromages Collection generated", 200
