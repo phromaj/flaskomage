@@ -1,4 +1,3 @@
-import re
 from bson import json_util
 from flask import Flask, request, jsonify
 import pymongo
@@ -19,11 +18,35 @@ regions_coll = db.regions
 @app.route('/regions', methods=['GET'])
 def get_regions():
     """
-    Retrieves all data from the regions collection.
+    Retrieves one or many datas from the regions collection.
     :return: regions[]: list of regions and status code 200
     """
-    regions = list(regions_coll.find({}))
-    return json_util.dumps(regions), 200
+    try:
+        regions_data = []
+        filter = {}
+        if "nom" in request.args:
+            filter["nom"] = {"$regex": request.args.get("nom").capitalize()}
+        if "departement" in request.args:
+            filter["departement"] = {"$regex": request.args.get("departement").capitalize()}
+        if "chef_lieu" in request.args:
+            filter["chef_lieu"] = {"$regex": request.args.get("chef_lieu").capitalize()}
+        if "superficie" in request.args:
+            filter["superficie"] = {"$regex": request.args.get("superficie")}
+        if "population" in request.args:
+            filter["population"] = {"$regex": request.args.get("population")}
+        if "code" in request.args:
+            filter["code"] = {"$regex": request.args.get("code")}
+
+
+        get_value = regions_coll.find(filter)
+        for x in get_value:
+            regions_data.append(x)
+
+
+    except Exception as inst:
+        print(inst)
+        return "An error has occured", 500
+    return json_util.dumps(regions_data), 200
 
 
 @app.route('/regions/db_generator', methods=['POST'])
@@ -41,23 +64,28 @@ def generate_regions():
 @app.route('/fromages', methods=['GET'])
 def get_fromages():
     """
-    Retrieves all data from the cheese collection.
+    Retrieves one or many datas from the fromages collection.
     :return: fromages[]: list of fromages and status code 200
     """
-    fromages = list(fromages_coll.find({}))
-    return json_util.dumps(fromages), 200
-
-
-@app.route('/fromages_filter', methods=['GET'])
-def get_filter():
     try:
         fromages_data = []
-        nom = {"nom": {"$regex": request.args.get("nom")}}
-        # departement = {"departement": request.args.get("departement").capitalize()}
-        get_value = fromages_coll.find(nom)
+        filter = {}
+        if "departement" in request.args:
+            filter["departement"] = {
+                "$regex": request.args.get("departement").capitalize()}
+        if "nom" in request.args:
+            filter["nom"] = {"$regex": request.args.get("nom").capitalize()}
+        if "annee" in request.args:
+            filter["annee_aoc"] = {"$regex": request.args.get("annee")}
+        if "pate" in request.args:
+            filter["pate"] = {"$regex": request.args.get("pate")}
+        if "lait" in request.args:
+            filter["lait"] = {"$regex": request.args.get("lait").capitalize()}
+        get_value = fromages_coll.find(filter)
         for x in get_value:
             fromages_data.append(x)
-    except:
+    except Exception as inst:
+        print(inst)
         return "An error has occured", 500
     return json_util.dumps(fromages_data), 200
 
