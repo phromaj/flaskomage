@@ -6,11 +6,11 @@ from wiki_scraper import scrape_fromages, scrape_regions
 
 app = Flask(__name__)
 
-username = 'lena'
-password = 'admin'
+username = 'lucas'
+password = 'gauvain'
 client = pymongo.MongoClient(
-    f"mongodb+srv://{username}:{password}@coding.mvpr0.mongodb.net/myFirstDatabase?retryWrites=true&w=majority"
-)
+f"mongodb+srv://{username}:{password}@cluster0.qfqkw.mongodb.net/myFirstDatabase?retryWrites=true&w=majority")
+
 db = client.flaskomage
 fromages_coll = db.fromages
 regions_coll = db.regions
@@ -18,30 +18,21 @@ regions_coll = db.regions
 
 @app.route('/regions', methods=['GET'])
 def get_regions():
-    regions_data = []
-    get_value = regions_coll.find()
-    for x in get_value:
-        regions_data.append(x)
-    return f"{regions_data}"
+    regions = list(regions_coll.find({}))
+    return json_util.dumps(regions), 200
 
 
 @app.route('/regions/db_generator', methods=['POST'])
 def generate_regions():
     regions_to_send = scrape_regions()
     regions_coll.remove()
-    try:
-        regions_coll.insert_many(regions_to_send).inserted_ids
-    except:
-        return "Could not generate db", 500
+    regions_coll.insert_many(regions_to_send).inserted_ids
     return "Regions Collection generated", 200
 
 
 @app.route('/fromages', methods=['GET'])
 def get_fromages():
-    try:
-        fromages = list(fromages_coll.find({}))
-    except:
-        return "An error has occured", 500
+    fromages = list(fromages_coll.find({}))
     return json_util.dumps(fromages), 200
 
 
@@ -63,10 +54,7 @@ def get_filter():
 def generate_fromages():
     fromages_to_send = scrape_fromages()
     fromages_coll.remove()
-    try:
-        fromages_coll.insert_many(fromages_to_send).inserted_ids
-    except:
-        return "Could not generate db", 500
+    fromages_coll.insert_many(fromages_to_send).inserted_ids
     return "Fromages Collection generated", 200
 
 
@@ -79,36 +67,38 @@ def insert():
     if not request.is_json:
         return "Il manque le JSON dans la requête", 400
 
-    nom = request.json.get('nom', None)
-    departement = request.json.get('departement', None)
-    pate = request.json.get('pate', None)
-    lait = request.json.get('lait', None)
-    annee_aoc = request.json.get('annee_aoc', None)
-    if not nom:
-        return "Il manque le paramètre 'nom' dans la requête", 400
-    if not departement:
-        return "Il manque le paramètre 'departement' dans la requête", 400
-    if not isinstance(departement, list):
-        return "Le type attendu pour le paramètre 'departement' n'est pas correct, il faut un tableau de string", 400
-    if not pate:
-        return "Il manque le paramètre 'pate' dans la requête", 400
-    if not lait:
-        return "Il manque le paramètre 'lait' dans la requête", 400
-    if not annee_aoc:
-        return "Il manque le paramètre 'annee_aoc' dans la requête", 400
-    if type(annee_aoc) is int:
-        if annee_aoc < 1900 or annee_aoc > 2100:
-            return "L'année rentrée n'est pas valide", 400
-    else:
-        return "Le type attendu pour le paramètre 'annee_aoc' n'est pas correct, il faut entrer un entier"
 
-    # Insert many documents in the cheese collection.
     fetchedDatas = request.get_json()
-    if not isinstance(fetchedDatas, list):
-        fetchedDatas = [fetchedDatas]
     fromage_tab = []
     initial_count = fromages_coll.find().count()
+
+    if not isinstance(fetchedDatas, list):
+        fetchedDatas = [fetchedDatas]
+
     for data in fetchedDatas:
+        nom = data.get('nom', None)
+        departement = data.get('departement', None)
+        pate = data.get('pate', None)
+        lait = data.get('lait', None)
+        annee_aoc = data.get('annee_aoc', None)
+        if not nom:
+            return "Il manque le paramètre 'nom' dans la requête", 400
+        if not departement:
+            return "Il manque le paramètre 'departement' dans la requête", 400
+        if not isinstance(departement, list):
+            return "Le type attendu pour le paramètre 'departement' n'est pas correct, il faut un tableau de string", 400
+        if not pate:
+            return "Il manque le paramètre 'pate' dans la requête", 400
+        if not lait:
+            return "Il manque le paramètre 'lait' dans la requête", 400
+        if not annee_aoc:
+            return "Il manque le paramètre 'annee_aoc' dans la requête", 400
+        if type(annee_aoc) is int:
+            if annee_aoc < 1900 or annee_aoc > 2100:
+                return "L'année rentrée n'est pas valide", 400
+        else:
+            return "Le type attendu pour le paramètre 'annee_aoc' n'est pas correct, il faut entrer un entier"
+
         initial_count += 1
         fromage = {
             "nom": data["nom"],
@@ -119,24 +109,11 @@ def insert():
             "fromage_id": initial_count,
         }
         fromage_tab.append(fromage)
-    var = fromages_coll.insert_many(fromage_tab).inserted_ids
 
-    # Insert one document in the cheese collection.
-    try:
-        req_data = request.get_json()
-        fromage = {
-            "nom": req_data["nom"],
-            "departement": req_data["departement"],
-            "pate": req_data["pate"],
-            "lait": req_data["lait"],
-            "annee_aoc": req_data["annee_aoc"],
-            "fromage_id": fromages_coll.find().count() + 1,
-        }
-        var = fromages_coll.insert_one(fromage).inserted_id
-    except:
-        return "An error has occured", 500
+    # Insert many documents in the cheese collection.
+    fromages_coll.insert_many(fromage_tab).inserted_ids
+
     return "Successfully posted", 200
-
 
 @app.route('/fromages/<id_fromage>', methods=['DELETE'])
 def delete_one(id_fromage):
@@ -144,13 +121,13 @@ def delete_one(id_fromage):
     Function to delete a cheese designated by its id.
     :return:
     """
-    try:
-        fromages_coll.delete_one({
+    result = fromages_coll.delete_one({
             "fromage_id": int(id_fromage)
         })
-    except:
-        return "Could not delete element", 500
-    return "Deleted", 200
+    if result.deleted_count == 0:
+        return "ID isn't correct", 500
+    else:
+        return "Deleted", 200
 
 
 @app.route('/fromages', methods=['DELETE'])
@@ -159,11 +136,11 @@ def delete_many():
     Function to delete all the documents in the cheese collection.
     :return:
     """
-    try:
-        fromages_coll.delete_many({})
-    except:
+    result = fromages_coll.delete_many({})
+    if result.deleted_count == 0:
         return "Could not delete", 500
-    return "Deleted", 200
+    else:
+        return "Deleted", 200
 
 
 @app.route('/fromages/<id_fromage>', methods=['PUT'])
