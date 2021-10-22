@@ -25,7 +25,7 @@ def get():
     return json_util.dumps(fromages), 200
 
 
-@app.route('/scrape_regions', methods=['POST'])
+@app.route('/regions/db-generator', methods=['POST'])
 def generate_regions():
     regions_to_send = scrape_regions()
     regions_coll.remove()
@@ -36,7 +36,7 @@ def generate_regions():
     return "Regions Collection generated", 200
 
 
-@app.route('/scrape_fromages', methods=['POST'])
+@app.route('/fromages/db-generator', methods=['POST'])
 def generate_fromages():
     fromages_to_send = scrape_fromages()
     fromages_coll.remove()
@@ -64,7 +64,7 @@ def insert():
     return "Successfully posted", 200
 
 
-@app.route('/delete_one/<id_fromage>', methods=['DELETE'])
+@app.route('/fromages/<id_fromage>', methods=['DELETE'])
 def delete_one(id_fromage):
     """
     Function to delete a cheese designated by its id.
@@ -79,17 +79,20 @@ def delete_one(id_fromage):
     return "Deleted", 200
 
 
-@app.route('/delete_many', methods=['DELETE'])
+@app.route('/fromages', methods=['DELETE'])
 def delete_many():
     """
     Function to delete all the documents in the cheese collection.
     :return:
     """
-    fromages_coll.delete_many({})
-    return "Delete"
+    try:
+        fromages_coll.delete_many({})
+    except:
+        return "Could not delete", 500
+    return "Deleted", 200
 
 
-@app.route('/update_one/<id_fromage>', methods=['PUT'])
+@app.route('/fromages/<id_fromage>', methods=['PUT'])
 def update_one(id_fromage):
     """
     Function to update a cheese designated by its id.

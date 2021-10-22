@@ -2,10 +2,10 @@ from bs4 import BeautifulSoup
 import requests
 
 def scrape_regions():
-    """Récupère les régions de France depuis Wikipedia
+    """Get every regions from wikipedia
 
     Returns:
-        region[]: liste de région
+        region[]: list of regions
     """
     wiki = "https://fr.wikipedia.org/wiki/R%C3%A9gion_fran%C3%A7aise"
     header = {
@@ -19,49 +19,8 @@ def scrape_regions():
     table = tables[2]
 
     tableau = []
-
-    # preinit list of lists
-    rows = table.findAll("tr")
-    row_lengths = [len(r.findAll(['th', 'td'])) for r in rows]
-    ncols = max(row_lengths)
-    nrows = len(rows)
-    data = []
-    for i in range(nrows):
-        rowD = []
-        for j in range(ncols):
-            rowD.append('')
-        data.append(rowD)
-
-    # process html
-    for i in range(len(rows)):
-        row = rows[i]
-        rowD = []
-        cells = row.findAll(["td", "th"])
-        for j in range(len(cells)):
-            cell = cells[j]
-
-            # lots of cells span cols and rows so lets deal with that
-            cspan = int(cell.get('colspan', 1))
-            rspan = int(cell.get('rowspan', 1))
-            l = 0
-            for k in range(rspan):
-                # Shifts to the first empty cell of this row
-                while data[i + k][j + l]:
-                    l += 1
-                for m in range(cspan):
-                    cell_n = j + l + m
-                    row_n = i + k
-                    # in some cases the colspan can overflow the table, in those cases just get the last item
-                    cell_n = min(cell_n, len(data[row_n]) - 1)
-                    data[row_n][cell_n] += cell.text
-
-        data.append(rowD)
-
-    # write data out to tab seperated format
-    tab = []
-    for i in range(nrows):
-        rowStr = '$'.join(data[i])
-        tab.append(rowStr)
+    
+    tab = process_table(table)
 
     # split datas into arrays of string
     for t in tab:
@@ -110,10 +69,10 @@ def scrape_regions():
 
 
 def scrape_fromages():
-    """Récupère les fromages de France depuis Wikipedia
+    """Get every cheeses from wikipedia
 
     Returns:
-        fromage[]: liste de fromage
+        fromage[]: list of cheese
     """
     wiki = "https://fr.wikipedia.org/wiki/Liste_des_AOC_et_AOP_laiti%C3%A8res_fran%C3%A7aises"
     header = {
@@ -128,48 +87,7 @@ def scrape_fromages():
 
     tableau = []
 
-    # preinit list of lists
-    rows = table.findAll("tr")
-    row_lengths = [len(r.findAll(['th', 'td'])) for r in rows]
-    ncols = max(row_lengths)
-    nrows = len(rows)
-    data = []
-    for i in range(nrows):
-        rowD = []
-        for j in range(ncols):
-            rowD.append('')
-        data.append(rowD)
-
-    # process html
-    for i in range(len(rows)):
-        row = rows[i]
-        rowD = []
-        cells = row.findAll(["td", "th"])
-        for j in range(len(cells)):
-            cell = cells[j]
-
-            # lots of cells span cols and rows so lets deal with that
-            cspan = int(cell.get('colspan', 1))
-            rspan = int(cell.get('rowspan', 1))
-            l = 0
-            for k in range(rspan):
-                # Shifts to the first empty cell of this row
-                while data[i + k][j + l]:
-                    l += 1
-                for m in range(cspan):
-                    cell_n = j + l + m
-                    row_n = i + k
-                    # in some cases the colspan can overflow the table, in those cases just get the last item
-                    cell_n = min(cell_n, len(data[row_n]) - 1)
-                    data[row_n][cell_n] += cell.text
-
-        data.append(rowD)
-
-    # write data out to tab seperated format
-    tab = []
-    for i in range(nrows):
-        rowStr = '$'.join(data[i])
-        tab.append(rowStr)
+    tab = process_table(table)
 
     # split datas into array of string
     for t in tab:
@@ -230,3 +148,48 @@ def scrape_fromages():
         fromages_to_send.append(fromages)
 
     return fromages_to_send
+
+def process_table(table):
+    # preinit list of lists
+    rows = table.findAll("tr")
+    row_lengths = [len(r.findAll(['th', 'td'])) for r in rows]
+    ncols = max(row_lengths)
+    nrows = len(rows)
+    data = []
+    for i in range(nrows):
+        rowD = []
+        for j in range(ncols):
+            rowD.append('')
+        data.append(rowD)
+
+    # process html
+    for i in range(len(rows)):
+        row = rows[i]
+        rowD = []
+        cells = row.findAll(["td", "th"])
+        for j in range(len(cells)):
+            cell = cells[j]
+
+            # lots of cells span cols and rows so lets deal with that
+            cspan = int(cell.get('colspan', 1))
+            rspan = int(cell.get('rowspan', 1))
+            l = 0
+            for k in range(rspan):
+                # Shifts to the first empty cell of this row
+                while data[i + k][j + l]:
+                    l += 1
+                for m in range(cspan):
+                    cell_n = j + l + m
+                    row_n = i + k
+                    # in some cases the colspan can overflow the table, in those cases just get the last item
+                    cell_n = min(cell_n, len(data[row_n]) - 1)
+                    data[row_n][cell_n] += cell.text
+
+        data.append(rowD)
+
+    # write data out to tab seperated format
+    tab = []
+    for i in range(nrows):
+        rowStr = '$'.join(data[i])
+        tab.append(rowStr)
+    return tab
