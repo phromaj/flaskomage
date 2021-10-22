@@ -164,6 +164,14 @@ def update_one(id_fromage):
     :return: Status code 200
     """
     filter_by_id = {'fromage_id': int(id_fromage)}
-    new_values = {"$set": request.get_json()}
+    fromage = request.get_json()
+    keys = ["nom", "departement", "annee_aoc", "pate", "lait"]
+    hasKey = True
+    for key in fromage.keys():
+        if not key in keys:
+            hasKey = False
+    if not hasKey:
+        return "Sent JSON is not valid"
+    new_values = {"$set": fromage}
     fromages_coll.update_one(filter_by_id, new_values)
-    return "Update", 200
+    return "Updated", 200

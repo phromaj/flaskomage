@@ -19,6 +19,16 @@
 #         final_result.remove(y)
 # print(final_result)
 
-
-for i in range(11):
-    print(i)
+fromage = {
+    "nom": "fefe",
+    "departement": "fef",
+    "dwd": "dwd"
+}
+keys = ["nom", "departement", "annee_aoc", "pate", "lait"]
+hasKey = True
+for key in fromage.keys():
+    if not key in keys:
+        hasKey = False
+if(hasKey):
+    print("ok")
+        
