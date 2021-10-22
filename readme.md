@@ -40,7 +40,6 @@ Les documents de la collection régions seront sous cette forme :
   ],
   "superficie": "",
   "population": "",
-  "densite": "",
   "code": 0,
   "region_id": 0
 } 
@@ -95,7 +94,7 @@ Réponse : Status 200 OK
 @app.route('/fromages/<id>', methods=['PUT'])
 ```
 
-Response : Status 201 Created
+Response : Status 200 Created
 
 ## Supprimer un document dans la collection fromages - DELETE
 
