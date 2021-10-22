@@ -17,7 +17,7 @@ regions_coll = db.regions
 
 
 @app.route('/fromages', methods=['GET'])
-def get():
+def get_fromages():
     try:
         fromages = list(fromages_coll.find({}))
     except:
@@ -25,7 +25,21 @@ def get():
     return json_util.dumps(fromages), 200
 
 
-@app.route('/get_regions', methods=['GET'])
+@app.route('/fromages', methods=['GET'])
+def get_filter():
+    try:
+        fromages_data = []
+        nom = {"nom": {"$regex": request.args.get("nom")}}
+        # departement = {"departement": request.args.get("departement").capitalize()}
+        get_value = fromages_coll.find(nom)
+        for x in get_value:
+            fromages_data.append(x)
+    except:
+        return "An error has occured", 500
+    return json_util.dumps(fromages_data), 200
+
+
+@app.route('/regions', methods=['GET'])
 def get_regions():
     regions_data = []
     get_value = regions_coll.find()
@@ -33,7 +47,7 @@ def get_regions():
         regions_data.append(x)
     return f"{regions_data}"
 
-  
+
 @app.route('/scrape_regions', methods=['POST'])
 def generate_regions():
     regions_to_send = scrape_regions()
@@ -64,7 +78,7 @@ def insert():
     """
     if not request.is_json:
         return "Il manque le JSON dans la requête", 400
-    
+
     nom = request.json.get('nom', None)
     departement = request.json.get('departement', None)
     pate = request.json.get('pate', None)
@@ -87,7 +101,7 @@ def insert():
             return "L'année rentrée n'est pas valide", 400
     else:
         return "Le type attendu pour le paramètre 'annee_aoc' n'est pas correct, il faut entrer un entier"
-    
+
     # Insert many documents in the cheese collection.
     fetchedDatas = request.get_json()
     if not isinstance(fetchedDatas, list):
@@ -105,8 +119,8 @@ def insert():
             "fromage_id": initial_count,
         }
         fromage_tab.append(fromage)
-    fromages_coll.insert_many(fromage_tab).inserted_ids
-    
+    var = fromages_coll.insert_many(fromage_tab).inserted_ids
+
     # Insert one document in the cheese collection.
     try:
         req_data = request.get_json()
@@ -118,7 +132,7 @@ def insert():
             "annee_aoc": req_data["annee_aoc"],
             "fromage_id": fromages_coll.find().count() + 1,
         }
-        fromages_coll.insert_one(fromage).inserted_id
+        var = fromages_coll.insert_one(fromage).inserted_id
     except:
         return "An error has occured", 500
     return "Successfully posted", 200
