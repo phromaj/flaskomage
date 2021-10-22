@@ -15,6 +15,24 @@ db = client.flaskomage
 fromages_coll = db.fromages
 regions_coll = db.regions
 
+@app.route('/regions', methods=['GET'])
+def get_regions():
+    regions_data = []
+    get_value = regions_coll.find()
+    for x in get_value:
+        regions_data.append(x)
+    return f"{regions_data}"
+
+
+@app.route('/regions/db-generator', methods=['POST'])
+def generate_regions():
+    regions_to_send = scrape_regions()
+    regions_to_send.remove()
+    try:
+        regions_coll.insert_many(regions_to_send).inserted_ids
+    except:
+        return "Could not generate db", 500
+    return "Regions Collection generated", 200
 
 @app.route('/fromages', methods=['GET'])
 def get_fromages():
@@ -39,27 +57,8 @@ def get_filter():
     return json_util.dumps(fromages_data), 200
 
 
-@app.route('/regions', methods=['GET'])
-def get_regions():
-    regions_data = []
-    get_value = regions_coll.find()
-    for x in get_value:
-        regions_data.append(x)
-    return f"{regions_data}"
 
-
-@app.route('/scrape_regions', methods=['POST'])
-def generate_regions():
-    regions_to_send = scrape_regions()
-    regions_coll.remove()
-    try:
-        regions_coll.insert_many(regions_to_send).inserted_ids
-    except:
-        return "Could not generate db", 500
-    return "Regions Collection generated", 200
-
-
-@app.route('/scrape_fromages', methods=['POST'])
+@app.route('/fromages/db-generator', methods=['POST'])
 def generate_fromages():
     fromages_to_send = scrape_fromages()
     fromages_coll.remove()
@@ -67,7 +66,7 @@ def generate_fromages():
         regions_coll.insert_many(fromages_to_send).inserted_ids
     except:
         return "Could not generate db", 500
-    return "Regions Collection generated", 200
+    return "Fromages Collection generated", 200
 
 
 @app.route('/fromages', methods=['POST'])
@@ -138,7 +137,7 @@ def insert():
     return "Successfully posted", 200
 
 
-@app.route('/delete_one/<id_fromage>', methods=['DELETE'])
+@app.route('/fromages/<id_fromage>', methods=['DELETE'])
 def delete_one(id_fromage):
     """
     Function to delete a cheese designated by its id.
@@ -153,17 +152,20 @@ def delete_one(id_fromage):
     return "Deleted", 200
 
 
-@app.route('/delete_many', methods=['DELETE'])
+@app.route('/fromages', methods=['DELETE'])
 def delete_many():
     """
     Function to delete all the documents in the cheese collection.
     :return:
     """
-    fromages_coll.delete_many({})
-    return "Delete"
+    try:
+        fromages_coll.delete_many({})
+    except:
+        return "Could not delete", 500
+    return "Deleted", 200
 
 
-@app.route('/update_one/<id_fromage>', methods=['PUT'])
+@app.route('/fromages/<id_fromage>', methods=['PUT'])
 def update_one(id_fromage):
     """
     Function to update a cheese designated by its id.
