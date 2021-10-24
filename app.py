@@ -24,6 +24,8 @@ def get_regions():
     try:
         regions_data = []
         filter = {}
+        if "region_id" in request.args:
+            filter["region_id"] = int(request.args.get("region_id"))
         if "nom" in request.args:
             filter["nom"] = {"$regex": request.args.get("nom").capitalize()}
         if "departement" in request.args:
@@ -31,12 +33,11 @@ def get_regions():
         if "chef_lieu" in request.args:
             filter["chef_lieu"] = {"$regex": request.args.get("chef_lieu").capitalize()}
         if "superficie" in request.args:
-            filter["superficie"] = {"$regex": request.args.get("superficie")}
+            filter["superficie"] = int(request.args.get("superficie"))
         if "population" in request.args:
-            filter["population"] = {"$regex": request.args.get("population")}
+            filter["population"] = int(request.args.get("population"))
         if "code" in request.args:
-            filter["code"] = {"$regex": request.args.get("code")}
-
+            filter["code"] = int(request.args.get("code"))
 
         get_value = regions_coll.find(filter)
         for x in get_value:
@@ -70,13 +71,15 @@ def get_fromages():
     try:
         fromages_data = []
         filter = {}
+        if "fromage_id" in request.args:
+            filter["fromage_id"] = int(request.args.get("fromage_id"))
         if "departement" in request.args:
             filter["departement"] = {
                 "$regex": request.args.get("departement").capitalize()}
         if "nom" in request.args:
             filter["nom"] = {"$regex": request.args.get("nom").capitalize()}
         if "annee" in request.args:
-            filter["annee_aoc"] = {"$regex": request.args.get("annee")}
+            filter["annee_aoc"] = int(request.args.get("annee"))
         if "pate" in request.args:
             filter["pate"] = {"$regex": request.args.get("pate")}
         if "lait" in request.args:
@@ -98,7 +101,7 @@ def generate_fromages():
     """
     fromages_to_send = scrape_fromages()
     fromages_coll.remove()
-    fromages_coll.insert_many(fromages_to_send).inserted_ids
+    fromages_coll.insert_many(fromages_to_send)
     return "Fromages Collection generated", 200
 
 
@@ -174,12 +177,25 @@ def delete_one(id_fromage):
 
 
 @app.route('/fromages', methods=['DELETE'])
-def delete_many():
+def delete_many_fromages():
     """
     Function to delete all the documents in the cheese collection.
     :return: Status code 200
     """
     result = fromages_coll.delete_many({})
+    if result.deleted_count == 0:
+        return "Could not delete", 500
+    else:
+        return "Deleted", 200
+
+
+@app.route('/regions', methods=['DELETE'])
+def delete_many_regions():
+    """
+    Function to delete all the documents in the cheese collection.
+    :return: Status code 200
+    """
+    result = regions_coll.delete_many({})
     if result.deleted_count == 0:
         return "Could not delete", 500
     else:
